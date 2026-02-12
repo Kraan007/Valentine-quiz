@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bombay Fries School Valentines Quiz😘</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+overflow:hidden;
+background:linear-gradient(180deg,#fdf6f9,#ffeef5);
+}
+
+/* floating flowers + hearts */
+.float{
+position:fixed;
+bottom:-20px;
+font-size:22px;
+animation:floatUp linear forwards;
+}
+
+@keyframes floatUp{
+to{
+transform:translateY(-110vh);
+opacity:0;
+}
+}
+
+.center{
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.card{
+background:white;
+border-radius:20px;
+padding:20px;
+width:95%;
+max-width:520px;
+box-shadow:0 10px 25px rgba(0,0,0,0.15);
+text-align:center;
+position:relative;
+z-index:2;
+}
+
+button,input{
+width:100%;
+margin:8px 0;
+padding:12px;
+border-radius:12px;
+border:none;
+font-size:16px;
+}
+
+button{
+background:#ff6f91;
+color:white;
+cursor:pointer;
+}
+
+img{
+width:100%;
+border-radius:12px;
+margin-top:10px;
+}
+
+.hidden{display:none;}
+
+canvas{
+position:fixed;
+inset:0;
+pointer-events:none;
+z-index:1;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="fireworks"></canvas>
+
+<div class="center">
+<div class="card">
+
+<h2 style="color:#ff6f91;"> Bombay Fries School Valentines Quiz😘</h2>
+
+<div id="screen"></div>
+
+<img id="photo" class="hidden"
+src="https://picsum.photos/500/300">
+
+<audio id="music" loop>
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8f6c3c6f5.mp3">
+</audio>
+
+</div>
+</div>
+
+<script>
+
+/* 🌸 FLOWER + HEART ANIMATION */
+const symbols=["🌸","🌺","💮","🌷","💖"];
+
+setInterval(()=>{
+const f=document.createElement("div");
+f.className="float";
+f.textContent=symbols[Math.floor(Math.random()*symbols.length)];
+f.style.left=Math.random()*100+"vw";
+f.style.animationDuration=(4+Math.random()*4)+"s";
+document.body.appendChild(f);
+setTimeout(()=>f.remove(),8000);
+},500);
+
+/* GAME DATA */
+const quiz=[
+
+{
+q:"Waise toh woh sirf chole bhature ny the ,uske saath ______ the/thi , sabu dana da papad tha 😌",
+a:["Pyaaaz (Onion my lady💅) ","Coconut (coz south indian you never know 😘) ","Kheer (I mean come on 😚)"],
+c:2
+},
+
+{
+q:"Okay Okay. Real tough question  -> Who is Karan's Bestfriend? 😁",
+a:["Sudhi (Lol she better be😘)","Pappinder Singh aka problem child 😈 (i love him)","Rohan Shetty (You gotto be Kidding me rn😂)"],
+c:1
+},
+
+{
+q:"What happens when we fight? 😆",
+a:["Karan Sleeps (coz why not, Hai hi Aalsi)😘","Sudhi waits till Karan replies (Foolish Karan)😡","They both end up apologizing (coz they love each other)🥰","All of the above (But First one specifically)😒"],
+c:3
+},
+
+{
+q:"By Saying ____________ you approved our Relationship✨",
+a:["Since we are a thing (Like a Diva💅) ","Mujhe ghar jaana hai (Kisses afterwards😈)","Karan feels like a Despo to me(She did say this😁)"],
+c:0
+},
+
+{
+q:"Where was our first (Official) Date ?",
+a:["Rashmi's Kitchen (Yt studio👌)","At a place where a certain Punjabi kid named his School After 😂","Bhaiya ji ke pani puri thele pe"],
+c:1
+},
+
+{
+q:"Time for a generic yet basic question : What is Karan's favorite color",
+a:["Red❤️","Green💚","Kya chutya question hai (Blue💙)"],
+c:2
+},
+
+{
+q:"What was the first thing I texted you?",
+a:["Do you Have Maths tutorial 4 (🤭)","Tu itni hot kyu hai (udhar hi blocked)","Aur , Surya ka text aya kya ?😂"],
+c:0
+},
+
+{
+q:"Okay last question! Pappu ka favorite khana kya hai",
+a:["Healthy Khana(Lol if only)","Pulses (when he hears this He'll check Karan ke ghar kya bana hai fir waha chala jayega)","Tala hua chatpata (ahem ahem)"],
+c:2
+}
+
+];
+
+
+const timeline=[
+"Ladies and Gentleman ......🥁",
+"She said YESSS...🥂🥳",
+"Overview of our lives in a nutshelll👇👇👇",
+"We Met.....👌",
+"We talked… 🌙",
+"We stopped talking… 😂",
+"We Met Again… ✨",
+"We decided to stay friends..😁",
+"I proposed.... 🥰",
+"You replied...Since we are a thing😚",
+"We are going strong...hehe",
+"I love you ....uff cheesey huh.."
+];
+
+const secretCode="143";
+
+/* STATE */
+let i=0,score=0,name="";
+const screen=document.getElementById("screen");
+const photo=document.getElementById("photo");
+const music=document.getElementById("music");
+
+/* 🌸 WELCOME SCREEN */
+function nameScreen(){
+screen.innerHTML=`
+<h3 style="color:#ff6f91;">
+Welcome Ms. Sudeeksha Guruprasad Byndoor<br>
+/ Pappinder Singh plus 8+ personalities you have Hehe
+</h3>
+
+<p style="font-size:14px;color:#555;">
+A chance to be my Valentine if you pass this quiz😁 
+</p>
+
+<button onclick="startGame()">Okayyy lessgooooo</button>
+`;
+}
+
+function startGame(){
+music.play().catch(()=>{});
+quizScreen();
+}
+
+function popupLoop(message, onYes){
+
+const box=document.createElement("div");
+
+box.style.position="fixed";
+box.style.top="50%";
+box.style.left="50%";
+box.style.transform="translate(-50%,-50%)";
+box.style.background="white";
+box.style.padding="20px";
+box.style.borderRadius="14px";
+box.style.boxShadow="0 8px 20px rgba(0,0,0,0.25)";
+box.style.zIndex="999";
+box.style.textAlign="center";
+
+box.innerHTML=`<p>${message}</p>`;
+
+const yes=document.createElement("button");
+yes.textContent="Yess ❤️";
+
+const no=document.createElement("button");
+no.textContent="No 😒";
+
+yes.onclick=()=>{
+box.remove();
+if(onYes) onYes();
+};
+
+no.onclick=()=>{
+box.remove();
+popupLoop("Please yess select karo bhayi 🥲", onYes);
+};
+
+box.appendChild(yes);
+box.appendChild(no);
+
+document.body.appendChild(box);
+}
+
+function quizScreen(){
+
+// FINAL QUESTION CHECK
+if(i>=quiz.length){
+
+if(score===8){
+
+popupLoop(
+"Since you passed the test.....can you be my valetine? (for the roml) 💖",
+()=>{
+timelineScreen();
+}
+);
+
+}else{
+
+alert("Wapis khel jabh tak 8 nahi milte 😤\n8 defines infinity sideways ♾️ isliye 8 score kar dumbass");
+
+i=0;
+score=0;
+quizScreen();
+
+}
+
+return;
+}
+
+const q=quiz[i];
+
+screen.innerHTML=`<p>${q.q}<br>Score: ${score}</p>`;
+
+q.a.forEach((txt,idx)=>{
+
+const b=document.createElement("button");
+b.textContent=txt;
+
+b.onclick=()=>{
+if(idx===q.c) score++;
+i++;
+quizScreen();
+};
+
+screen.appendChild(b);
+
+});
+
+}
+
+
+/* TIMELINE */
+function timelineScreen(){
+let t=0;
+screen.innerHTML="<p id='story'></p><button onclick='photoScreen()'>Reveal Memory</button>";
+const story=document.getElementById("story");
+
+const timer=setInterval(()=>{
+if(t>=timeline.length)return clearInterval(timer);
+story.innerHTML+=timeline[t]+"<br>";
+t++;
+},2000);
+}
+
+/* PHOTO */
+function photoScreen(){
+photo.classList.remove("hidden");
+screen.innerHTML=`
+<p>Score ${score}/${quiz.length}</p>
+<button onclick="secretScreen()">Unlock Secret</button>`;
+}
+
+/* SECRET */
+function secretScreen(){
+screen.innerHTML=`
+<p>Enter the code where you reply thank you when you are surrounded by your family 😏</p>
+<input id="code">
+<button onclick="checkSecret()">Unlock</button>`;
+}
+
+function checkSecret(){
+if(document.getElementById("code").value===secretCode){
+proposalScreen();
+}else alert("3 magical letters wala code Bhayiiiiiii🥲");
+}
+
+/* PROPOSAL */
+function proposalScreen(){
+screen.innerHTML="<p>Will you be my Valentine forever? hehe🤭</p>";
+
+const yes=document.createElement("button");
+yes.textContent="YES!!!";
+yes.onclick=()=>{
+screen.innerHTML="<p>YAYYYYY Thanks, Ilysm my Pappu baddie ❤️</p>";
+launchFireworks();
+};
+
+const no=document.createElement("button");
+no.textContent="Maybe 😏";
+no.onmouseover=()=>{
+no.style.position="absolute";
+no.style.left=Math.random()*60+"%";
+no.style.top=Math.random()*60+"%";
+};
+
+screen.appendChild(yes);
+screen.appendChild(no);
+}
+
+/* FIREWORKS */
+const canvas=document.getElementById("fireworks");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+let particles=[];
+
+function launchFireworks(){
+for(let k=0;k<80;k++){
+particles.push({
+x:canvas.width/2,
+y:canvas.height/2,
+vx:(Math.random()-0.5)*6,
+vy:(Math.random()-0.5)*6,
+life:60
+});
+}
+}
+
+function animate(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+particles.forEach(p=>{
+p.x+=p.vx;
+p.y+=p.vy;
+p.life--;
+ctx.fillStyle="#ff6f91";
+ctx.fillRect(p.x,p.y,3,3);
+});
+particles=particles.filter(p=>p.life>0);
+requestAnimationFrame(animate);
+}
+animate();
+
+/* START */
+nameScreen();
+
+</script>
+</body>
+</html>  
+
+
